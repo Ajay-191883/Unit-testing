@@ -1,11 +1,25 @@
+import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { Post } from "src/app/models/Post.model";
+import { PostService } from "src/app/services/post/post.service";
 import { PostsComponent } from "./posts.component";
+
+// alternate to create spy Object, we can create a mock class ourselves
+class MockPostService {
+  getPosts() {
+    return of(true);
+  }
+
+  deletePost(post: Post) {
+    return of(true);
+  }
+}
+// end
 
 describe("PostsComponent", () => {
   let POSTS: Post[];
   let component: PostsComponent;
-  let dummyPostService: any;
+  let mockPostService: any;
 
   beforeEach(() => {
     POSTS = [
@@ -26,27 +40,43 @@ describe("PostsComponent", () => {
       },
     ];
 
-    dummyPostService = jasmine.createSpyObj(["getPosts", "deletePost"]);
-    component = new PostsComponent(dummyPostService);
+    // mockPostService = jasmine.createSpyObj(["getPosts", "deletePost"]);
+
+    TestBed.configureTestingModule({
+      providers: [
+        PostsComponent,
+        {
+          provide: PostService,
+          // useValue: mockPostService,
+          useClass: MockPostService,
+        },
+      ],
+    });
+
+    component = TestBed.inject(PostsComponent);
+    mockPostService = TestBed.inject(PostService);
   });
 
   describe("deletePost", () => {
     beforeEach(() => {
-      dummyPostService.deletePost.and.returnValue(of(true));
+      // mockPostService.deletePost.and.returnValue(of(true));
       component.posts = POSTS;
-      component.deletePost(POSTS[1]);
     });
 
     it("should delete the post from the posts", () => {
+      component.deletePost(POSTS[1]);
       expect(component.posts.length).toBe(2);
     });
 
     it("should delete the actual selected post from the posts", () => {
+      component.deletePost(POSTS[1]);
       expect(component.posts.filter((p) => p.id == 2).length).toBe(0);
     });
 
     it("should call the delete method in post service only once", () => {
-      expect(dummyPostService.deletePost).toHaveBeenCalledTimes(1);
+      spyOn(mockPostService, "deletePost").and.callThrough();
+      component.deletePost(POSTS[1]);
+      expect(mockPostService.deletePost).toHaveBeenCalledTimes(1);
     });
   });
 });
