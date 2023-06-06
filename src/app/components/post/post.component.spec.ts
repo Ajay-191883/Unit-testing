@@ -1,3 +1,4 @@
+import { TestBed } from "@angular/core/testing";
 import { take } from "rxjs/operators";
 import { Post } from "src/app/models/Post.model";
 import { PostComponent } from "./post.component";
@@ -7,8 +8,18 @@ describe("PostComponent", () => {
   let post: Post;
 
   beforeEach(() => {
-    postComponent = new PostComponent();
+    TestBed.configureTestingModule({
+      declarations: [PostComponent],
+    });
+
+    const fixture = TestBed.createComponent(PostComponent);
+    postComponent = fixture.componentInstance;
+
     post = { id: 1, body: "Good Body", title: "Title" };
+  });
+
+  it("should create a component using TestBed", () => {
+    expect(postComponent).toBeDefined();
   });
 
   it("should emit an event on clicking delete post", () => {
